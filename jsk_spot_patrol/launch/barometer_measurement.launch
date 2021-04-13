@@ -1,0 +1,47 @@
+<launch>
+
+  <arg name="input_image" default="/usb_cam/image_raw"/>
+  <arg name="input_camera_info" default="/usb_cam/camera_info"/>
+  <arg name="barometer_size" default="0.1"/>
+
+  <!-- hyper parameter for barometer recognition -->
+  <arg name="hough_vot_thresh" default="40"/>
+  <arg name="debug" default="false"/>
+
+  <node name="barometer_sift" pkg="imagesift" type="imagesift"
+        launch-prefix="nice -n +10" output="screen">
+    <remap from="image" to="$(arg input_image)" />
+    <remap from="camera_info" to="$(arg input_camera_info)"/>
+  </node>
+  <node name="barometer_detector" pkg="jsk_perception" type="point_pose_extractor" >
+    <rosparam subst_value="true">
+      template_filename: $(find jsk_spot_patrol)/data/barometer_template.jpg
+      window_name: barometer
+      object_width: $(arg barometer_size)
+      object_height: $(arg barometer_size)
+      viewer_window: false
+    </rosparam>
+  </node>
+
+  <node name="barometer_measure" pkg="jsk_spot_patrol" type="barometer_measure.py"
+        output="screen" >
+    <remap from="~input" to="$(arg input_image)" />
+    <remap from="~camera_info" to="$(arg input_camera_info)" />
+    <remap from="~rect" to="/ObjectDetection" />
+    <rosparam subst_value="true">
+      start_value: -0.1
+      end_value: 0
+      barometer_size: $(arg barometer_size)
+      hough_vot_thresh: $(arg hough_vot_thresh)
+      debug: $(arg debug)
+    </rosparam>
+  </node>
+
+
+  <!-- rosrun roseus roseus   `rospack find jsk_spot_patrol`/euslisp/patrol.l  _init_waypoint:=-1 _upload:=false -->>
+  <!--  <node pkg="roseus" type="roseus" name="spot_patrol" output="screen" -->
+  <!--       args="$(find jsk_spot_patrol)/euslisp/patrol.l"> -->
+  <!-- </node> -->
+
+
+</launch>
