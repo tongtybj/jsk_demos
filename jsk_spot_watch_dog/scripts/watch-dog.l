@@ -224,8 +224,8 @@
     sm))
 
 ;; create robot interface
-(watchdog-init nil)
+;;(watchdog-init nil)
 
 ;; state machine
-(exec-state-machine (watchdog-sm))
+;;(exec-state-machine (watchdog-sm))
 
